@@ -1,0 +1,7 @@
+sawt.local {
+    reverse_proxy localhost:3010
+
+    handle_path /api/* {
+        reverse_proxy localhost:8010
+    }
+}
