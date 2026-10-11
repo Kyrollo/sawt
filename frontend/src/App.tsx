@@ -1,170 +1,148 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, AlertTriangle, CheckCircle2, ShieldCheck, Sparkles, Terminal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Header } from './components/Header';
+import { CallInspectorTab } from './components/CallInspectorTab';
+import { CenterAnalyticsTab } from './components/CenterAnalyticsTab';
+import { LiveAudioAnalysisLabTab } from './components/LiveAudioAnalysisLabTab';
+import { fetchCalls, fetchAnalytics } from './lib/api';
+import { CallQAAnalysis, ContactCenterKPIs } from './types/sawt';
+import { GitCommit, Headphones, BarChart3, PlayCircle } from 'lucide-react';
 
-interface HealthData {
-  status: string;
-  checks?: Record<string, string>;
-  environment?: string;
-}
-
-export default function App() {
-  const [health, setHealth] = useState<HealthData | null>(null);
-  const [loading, setLoading] = useState(true);
+export const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'calls' | 'analytics' | 'lab'>('calls');
+  const [calls, setCalls] = useState<CallQAAnalysis[]>([]);
+  const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
+  const [kpis, setKpis] = useState<ContactCenterKPIs | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRtl, setIsRtl] = useState<boolean>(false);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [fetchedCalls, fetchedKPIs] = await Promise.all([
+        fetchCalls(),
+        fetchAnalytics(),
+      ]);
+      setCalls(fetchedCalls);
+      setKpis(fetchedKPIs);
+      if (fetchedCalls.length > 0 && !selectedCallId) {
+        setSelectedCallId(fetchedCalls[0].call_id);
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load Arabic speech analytics records');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function checkHealth() {
-      try {
-        const res = await fetch('/api/v1/readyz');
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({ detail: res.statusText }));
-          throw new Error(errData.detail || `HTTP ${res.status}`);
-        }
-        const data = await res.json();
-        setHealth(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to reach API gateway');
-      } finally {
-        setLoading(false);
-      }
-    }
-    checkHealth();
+    loadData();
   }, []);
 
+  const handleAnalyzeComplete = (newCall: CallQAAnalysis) => {
+    setCalls((prev) => [newCall, ...prev]);
+    setSelectedCallId(newCall.call_id);
+    fetchAnalytics().then(setKpis).catch(() => {});
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border bg-card/60 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold shadow-sm">
-              S
-            </div>
-            <div>
-              <span className="font-bold text-lg tracking-tight">Sawt</span>
-              <span className="text-xs text-muted-foreground ml-2 hidden sm:inline-block">v1.0.0</span>
-            </div>
-          </div>
+    <div
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30"
+    >
+      {/* Sawt Header */}
+      <Header
+        kpis={kpis}
+        isLoading={isLoading}
+        onRefresh={loadData}
+        isRtl={isRtl}
+        onToggleRtl={() => setIsRtl(!isRtl)}
+      />
 
-          <div className="flex items-center gap-3">
-            {loading ? (
-              <Badge variant="outline" className="animate-pulse">Checking...</Badge>
-            ) : error ? (
-              <Badge variant="destructive" className="flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5" /> Degraded
-              </Badge>
-            ) : (
-              <Badge variant="success" className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Operational
-              </Badge>
-            )}
-            <Button variant="outline" size="sm" asChild>
-              <a href="/docs" target="_blank" rel="noreferrer">
-                API Docs
-              </a>
-            </Button>
-          </div>
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-slate-800 gap-2">
+          <button
+            onClick={() => setActiveTab('calls')}
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'calls'
+                ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Headphones className="w-4 h-4" />
+            {isRtl ? `تسجيلات المكالمات (${calls.length})` : `Call Diarization & QA (${calls.length})`}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'analytics'
+                ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            {isRtl ? 'إحصائيات مركز الاتصال' : 'Contact Center Analytics'}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('lab')}
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'lab'
+                ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <PlayCircle className="w-4 h-4" />
+            {isRtl ? 'المختبر الصوتي المباشر' : 'Live Arabic Speech Lab'}
+          </button>
         </div>
-      </header>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8">
         {error && (
-          <Alert className="border-red-500/30 bg-red-500/5 text-red-600">
-            <AlertTriangle className="w-4 h-4 text-red-500" />
-            <AlertTitle>Upstream Degraded (RFC 7807 503)</AlertTitle>
-            <AlertDescription className="text-muted-foreground text-xs font-mono">
-              {error} - Backend dependency unavailable. Degraded mode active.
-            </AlertDescription>
-          </Alert>
+          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+            {error}
+          </div>
         )}
 
-        <div className="space-y-2">
-          <h1 className="text-3xl font-extrabold tracking-tight">Sawt</h1>
-          <p className="text-muted-foreground max-w-3xl leading-relaxed">
-            Arabic Speech Analytics & Contact Center QA: ASR transcription, speaker diarization, dialect identification, and sentiment scorecards
-          </p>
-        </div>
+        {/* Tab Views */}
+        {activeTab === 'calls' && (
+          <CallInspectorTab
+            calls={calls}
+            selectedCallId={selectedCallId}
+            onSelectCall={setSelectedCallId}
+            isRtl={isRtl}
+          />
+        )}
 
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-2">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <CardTitle>Verified Production Core</CardTitle>
-              <CardDescription>
-                Strict CI enforcement against mock responses or fake token streams. All endpoints hit real models.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        {activeTab === 'analytics' && (
+          <CenterAnalyticsTab kpis={kpis} calls={calls} isRtl={isRtl} />
+        )}
 
-          <Card>
-            <CardHeader>
-              <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-2">
-                <Activity className="w-4 h-4" />
-              </div>
-              <CardTitle>Observability Stack</CardTitle>
-              <CardDescription>
-                Prometheus metrics, OpenTelemetry spans, and Langfuse tracing integrated into every inference call.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-2">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <CardTitle>Unique UI Archetype</CardTitle>
-              <CardDescription>
-                Tailored for RTL-first analytics workflows with custom tokens and typography.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* System Status Panel */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-primary" /> Live Cluster Connectivity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted/50 rounded-lg p-4 font-mono text-xs space-y-2">
-              <div className="flex justify-between border-b border-border/50 pb-2">
-                <span className="text-muted-foreground">Gateway Port:</span>
-                <span>8010</span>
-              </div>
-              <div className="flex justify-between border-b border-border/50 pb-2">
-                <span className="text-muted-foreground">Frontend Port:</span>
-                <span>3010</span>
-              </div>
-              <div className="flex justify-between border-b border-border/50 pb-2">
-                <span className="text-muted-foreground">LLM Provider:</span>
-                <span>Ollama / Local GPU (Fallback: Cloud)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Cluster Readiness:</span>
-                <span className={health?.status === 'ready' ? 'text-emerald-500' : 'text-amber-500'}>
-                  {health?.status || 'connecting'}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {activeTab === 'lab' && (
+          <LiveAudioAnalysisLabTab
+            onAnalyzeComplete={handleAnalyzeComplete}
+            isRtl={isRtl}
+          />
+        )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        Sawt &bull; Autonomous AI Production Stack &bull; Licensed under MIT
+      <footer className="border-t border-slate-900 bg-slate-950/80 px-6 py-4 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="flex items-center gap-2 font-mono">
+          <GitCommit className="w-3.5 h-3.5 text-indigo-500" />
+          <span>Sawt Production v1.0.0</span>
+          <span>•</span>
+          <span>Multilingual Arabic Speech QA Architecture</span>
+        </div>
+        <div>
+          <span>Local Engine: NVIDIA RTX A5000 Laptop GPU (16GB VRAM)</span>
+        </div>
       </footer>
     </div>
   );
-}
+};
+
+export default App;

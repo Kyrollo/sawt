@@ -1,0 +1,88 @@
+<svg width="760" height="340" viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="760" height="340" rx="16" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="1.5" />
+
+  <!-- Title & Header -->
+  <text x="32" y="44" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#f8fafc">
+    Sawt صوت Arabic Speech Intelligence &amp; Contact Center QA
+  </text>
+  <text x="32" y="66" font-family="JetBrains Mono, monospace" font-size="11" fill="#94a3b8">
+    Model: qwen2.5:0.5b | Hardware: NVIDIA RTX A5000 (16GB VRAM) | Status: PASSED
+  </text>
+
+  <!-- Metric Card 1: Dialect Classification Speed -->
+  <g transform="translate(32, 90)">
+    <rect width="210" height="90" rx="10" fill="#111827" stroke="#1f2937" />
+    <text x="16" y="26" font-family="Inter, sans-serif" font-size="11" fill="#94a3b8">DIALECT DETECTION SPEED</text>
+    <text x="16" y="58" font-family="JetBrains Mono, monospace" font-size="24" font-weight="700" fill="#818cf8">
+      3.79 µs
+    </text>
+    <text x="16" y="78" font-family="Inter, sans-serif" font-size="10" fill="#64748b">
+      per conversational turn
+    </text>
+  </g>
+
+  <!-- Metric Card 2: Contact Center QA Score -->
+  <g transform="translate(262, 90)">
+    <rect width="220" height="90" rx="10" fill="#111827" stroke="#1f2937" />
+    <text x="16" y="26" font-family="Inter, sans-serif" font-size="11" fill="#94a3b8">AVERAGE QA SCORE</text>
+    <text x="16" y="58" font-family="JetBrains Mono, monospace" font-size="24" font-weight="700" fill="#10b981">
+      72.5%
+    </text>
+    <text x="16" y="78" font-family="Inter, sans-serif" font-size="10" fill="#64748b">
+      FCR Rate: 40.0%
+    </text>
+  </g>
+
+  <!-- Metric Card 3: Dialects Covered -->
+  <g transform="translate(502, 90)">
+    <rect width="226" height="90" rx="10" fill="#111827" stroke="#1f2937" />
+    <text x="16" y="26" font-family="Inter, sans-serif" font-size="11" fill="#94a3b8">ARABIC DIALECTS</text>
+    <text x="16" y="58" font-family="JetBrains Mono, monospace" font-size="24" font-weight="700" fill="#38bdf8">
+      5 Regions
+    </text>
+    <text x="16" y="78" font-family="Inter, sans-serif" font-size="10" fill="#64748b">
+      Gulf, Egypt, Levant, Maghreb, MSA
+    </text>
+  </g>
+
+  <!-- Speech AI Micro-benchmarks bar -->
+  <g transform="translate(32, 205)">
+    <rect width="696" height="105" rx="10" fill="#111827" stroke="#1f2937" />
+    <text x="16" y="24" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#e2e8f0">
+      Speech Analytics &amp; GPU Coaching Micro-benchmarks
+    </text>
+    
+    <text x="16" y="48" font-family="JetBrains Mono, monospace" font-size="11" fill="#cbd5e1">
+      • QA Scorecard &amp; Escalation Analysis Latency:
+    </text>
+    <text x="440" y="48" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="#10b981">
+      8.40 µs
+    </text>
+
+    <text x="16" y="70" font-family="JetBrains Mono, monospace" font-size="11" fill="#cbd5e1">
+      • Local GPU Executive Coaching Generation:
+    </text>
+    <text x="440" y="70" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="#10b981">
+      3032.5 ms
+    </text>
+
+    <text x="16" y="92" font-family="JetBrains Mono, monospace" font-size="11" fill="#cbd5e1">
+      • Total Audited Calls in System:
+    </text>
+    <text x="440" y="92" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="#818cf8">
+      5 calls
+    </text>
+  </g>
+</svg>
