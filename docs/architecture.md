@@ -26,7 +26,7 @@ flowchart TD
     end
 
     subgraph LocalHardware["Workstation GPU Hardware Layer"]
-        OllamaLocal["Local Ollama Engine\nNVIDIA RTX A5000 (16GB VRAM) / qwen2.5:0.5b"]
+        OllamaLocal["Local Ollama Engine\nDedicated NVIDIA GPU (16GB VRAM) / qwen2.5:0.5b"]
     end
 
     QASupervisor -->|Audits Calls & Coaches Agents| UI
@@ -52,7 +52,7 @@ sequenceDiagram
     participant API as FastAPI Gateway
     participant Dialect as Dialect Classifier
     participant QAEngine as QA Scorecard Engine
-    participant GPU as Local RTX A5000 (Ollama)
+    participant GPU as Local Dedicated NVIDIA GPU (Ollama)
     participant Store as Rolling Call Store
 
     QA->>UI: Submit ASR Dual-Channel Arabic Audio Transcript
@@ -89,5 +89,5 @@ sequenceDiagram
 - Real-time escalation trigger detection for supervisor interventions.
 
 ### C. Local GPU Arabic Coaching Engine (`coach_engine.py`)
-- Leverages on-premise NVIDIA RTX A5000 GPU (16GB VRAM) via local Ollama.
+- Leverages on-premise NVIDIA Dedicated NVIDIA GPU (16GB VRAM) via local Ollama.
 - Generates high-quality Arabic supervisor memoranda and agent development recommendations with complete data sovereignty and zero cloud egress.

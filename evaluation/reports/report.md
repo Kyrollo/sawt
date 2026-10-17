@@ -3,7 +3,7 @@
 **Product**: Sawt (صوت) — Enterprise Arabic Speech Intelligence & Contact Center QA  
 **Status**: PASSED  
 **Execution Timestamp**: 2026-10-11  
-**Hardware Engine**: NVIDIA RTX A5000 Laptop GPU (16GB VRAM)  
+**Hardware Engine**: Dedicated NVIDIA GPU (16GB VRAM)  
 **Inference Engine**: Local Ollama (`qwen2.5:0.5b`)  
 
 ---
@@ -26,6 +26,6 @@
 
 - **Regional Dialect Support**: High-accuracy lexical classifiers for Gulf (خليجي), Egyptian (مصري), Levantine (شامي), Maghrebi (مغاربي), and Modern Standard Arabic (فصحى).
 - **RTL Typography & Scorecards**: RTL-first interface architecture with full speaker diarization and sentiment tracking.
-- **On-Premise GPU Synthesis**: Real-time supervisor coaching generated on workstation RTX A5000 hardware with complete privacy and zero data leakage.
+- **On-Premise GPU Synthesis**: Real-time supervisor coaching generated on workstation Dedicated NVIDIA GPU hardware with complete privacy and zero data leakage.
 
 ![Sawt Speech Metrics](sawt_speech_metrics.svg)

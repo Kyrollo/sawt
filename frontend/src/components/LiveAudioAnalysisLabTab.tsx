@@ -164,7 +164,7 @@ export const LiveAudioAnalysisLabTab: React.FC<LiveAudioAnalysisLabTabProps> = (
               </h2>
             </div>
             <span className="px-2 py-0.5 text-xs font-mono rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              Ollama RTX A5000
+              Ollama Dedicated NVIDIA GPU
             </span>
           </div>
 

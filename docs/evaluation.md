@@ -1,6 +1,6 @@
 # Sawt Evaluation & Reproducibility Guide
 
-Sawt includes an automated evaluation benchmark runner that measures Arabic dialect identification throughput, QA scorecard compliance and empathy evaluation speed, and live local GPU executive coaching synthesis on the workstation NVIDIA RTX A5000.
+Sawt includes an automated evaluation benchmark runner that measures Arabic dialect identification throughput, QA scorecard compliance and empathy evaluation speed, and live local GPU executive coaching synthesis on the workstation NVIDIA Dedicated NVIDIA GPU.
 
 ---
 
@@ -22,5 +22,5 @@ python evaluation/harness/runner.py
 
 - **Dialect Identification Throughput**: Measured processing speed for regional vocabulary token classification (< 5.0 µs per turn).
 - **QA Scorecard Calculation**: Speed of multi-criteria compliance, empathy, and escalation keyword checking (< 10.0 µs).
-- **GPU Executive Coaching Latency**: Local synthesis duration via on-premise Ollama (~3.0s on RTX A5000).
+- **GPU Executive Coaching Latency**: Local synthesis duration via on-premise Ollama (~3.0s on Dedicated NVIDIA GPU).
 - **Zero-Simulation Guarantee**: Evaluated with `check_no_simulation.py` to ensure complete absence of mock/simulated artifacts in production code.

@@ -45,7 +45,7 @@ def generate_sawt_metrics_svg(report: dict, output_path: Path) -> None:
     Sawt صوت Arabic Speech Intelligence &amp; Contact Center QA
   </text>
   <text x="32" y="66" font-family="JetBrains Mono, monospace" font-size="11" fill="#94a3b8">
-    Model: {report.get('model', 'qwen2.5:0.5b')} | Hardware: NVIDIA RTX A5000 (16GB VRAM) | Status: {report.get('status', 'PASSED')}
+    Model: {report.get('model', 'qwen2.5:0.5b')} | Hardware: Dedicated NVIDIA GPU (16GB VRAM) | Status: {report.get('status', 'PASSED')}
   </text>
 
   <!-- Metric Card 1: Dialect Classification Speed -->
@@ -136,7 +136,7 @@ async def run_benchmark() -> int:
 
     print(f"--> [PASS] Dialect detection throughput: {dialect_calc_us:.2f} µs per turn")
 
-    # Benchmark 2: Live GPU Arabic coaching generation on RTX A5000
+    # Benchmark 2: Live GPU Arabic coaching generation on Dedicated NVIDIA GPU
     live_req = LiveAnalyzeRequest(
         audio_text_ar="""الموظف: مرحباً بك في خدمة العملاء، معك طارق، كيف أستطيع مساعدتك اليوم؟
 العميل: هلا والله أخوي، عندي استفسار عن ترقية باقة الفايبر للسرعة الأعلى وأبي أعرف السعر زين.
@@ -166,7 +166,7 @@ async def run_benchmark() -> int:
         "timestamp": time.time(),
         "status": "PASSED",
         "model": "qwen2.5:0.5b",
-        "hardware": "NVIDIA RTX A5000 Laptop GPU (16GB VRAM)",
+        "hardware": "Dedicated NVIDIA GPU (16GB VRAM)",
         "dialect_calc_us": round(dialect_calc_us, 2),
         "qa_scorecard_calc_us": 8.4,
         "gpu_synthesis_ms": round(gpu_synthesis_ms, 1),
@@ -191,7 +191,7 @@ async def run_benchmark() -> int:
 **Product**: Sawt (صوت) — Enterprise Arabic Speech Intelligence & Contact Center QA  
 **Status**: PASSED  
 **Execution Timestamp**: 2026-10-11  
-**Hardware Engine**: NVIDIA RTX A5000 Laptop GPU (16GB VRAM)  
+**Hardware Engine**: Dedicated NVIDIA GPU (16GB VRAM)  
 **Inference Engine**: Local Ollama (`qwen2.5:0.5b`)  
 
 ---
@@ -214,7 +214,7 @@ async def run_benchmark() -> int:
 
 - **Regional Dialect Support**: High-accuracy lexical classifiers for Gulf (خليجي), Egyptian (مصري), Levantine (شامي), Maghrebi (مغاربي), and Modern Standard Arabic (فصحى).
 - **RTL Typography & Scorecards**: RTL-first interface architecture with full speaker diarization and sentiment tracking.
-- **On-Premise GPU Synthesis**: Real-time supervisor coaching generated on workstation RTX A5000 hardware with complete privacy and zero data leakage.
+- **On-Premise GPU Synthesis**: Real-time supervisor coaching generated on workstation Dedicated NVIDIA GPU hardware with complete privacy and zero data leakage.
 
 ![Sawt Speech Metrics](sawt_speech_metrics.svg)
 """
