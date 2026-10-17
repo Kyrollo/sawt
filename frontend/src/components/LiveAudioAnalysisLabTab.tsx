@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { runLiveAnalyze } from '../lib/api';
+import React, { useState, useRef } from 'react';
+import { runLiveAnalyze, synthesizeVoice } from '../lib/api';
 import { CallQAAnalysis } from '../types/sawt';
 import {
   Play,
+  Pause,
+  Volume2,
   Cpu,
   Sparkles,
   AlertTriangle,
@@ -13,6 +15,8 @@ import {
   Scale,
 } from 'lucide-react';
 
+import { MarkdownRenderer } from './MarkdownRenderer';
+
 interface LiveAudioAnalysisLabTabProps {
   onAnalyzeComplete: (analysis: CallQAAnalysis) => void;
   isRtl: boolean;
@@ -20,31 +24,44 @@ interface LiveAudioAnalysisLabTabProps {
 
 const PRESET_CONVERSATIONS = [
   {
-    title: 'Riyadh Telecom 5G (خليجي)',
+    title: 'Saudi/Gulf Telecom (خليجي سعودي)',
+    dialect: 'GULF',
     agentId: 'AG-KHALED-12',
     customerId: 'CUST-RYD-901',
-    text: `الموظف: مرحباً بك في شركة الاتصالات، معك خالد، شلون أقدر أخدمك طال عمرك؟
-العميل: هلا والله أخوي، عندي مشكلة وايد صعبة في سرعة النت وأبي فني يفحص الراوتر زين.
-الموظف: أبشر ولا تشيل هم، رفعت لك طلب فحص فوري وسيتواصل معك الفني خلال ساعتين.
-العميل: بيض الله وجهك يا خالد، ما قصرت وشكراً جزيلاً.`,
+    text: `الموظف: يَا هَلَا وِمِسْهَلَا وَالله، حَيَّاكِ الله بْشَرِكِةِ الاِتِّصَالَاتْ مَعَكْ خَالِدْ.. وِشْلُونْ أَقْدَرْ أَخْدِمِكْ طَالْ عُمْرِكْ؟
+العميل: هَلَا وَالله أَخُويْ خَالِدْ، مَسَّاكِ الله بَالْخِيرْ.. يَا خُويْ فَاتُورَة الجَوَّالْ هَالشَّهَرْ طَالْعَة وَايِدْ مِرْتَفْعَة، وِأَبِي أَعْرِفِ السَّالْفَة، شْلُونِ انْحِسْبَتْ عَلَيَّ بَاقِةْ الفَايْفْ جِي؟
+الموظف: أَبْشِرْ بْسَعْدِكْ وِعَيْنْ فْرَاشْ وِعَيْنْ غَطَا، سَمّْ طَالْ عُمْرِكْ.. شَيَّكْتْ لِكْ عَالْحِسَابْ وِلْقِيتِ اشْتِرَاكْ خِدْمَة نِزِلْ بَالْغَلَطْ، وِأَنَا الحِينْ لِغِيتَهْ وِنَزَّلْتْ لِكْ خَصِمْ خَمْسِينْ رِيَالْ عَالْفَاتُورَة.
+العميل: كِفُو وَالله وِبَيَّضِ الله وِجْهِكْ يَا خَالِدْ، مَا قَصَّرْتْ يَا بَعَدْ رَاسِي وِتِسْلَمْ يِمِينِكْ، زِينْ مَا سَوِّيتْ.`,
   },
   {
-    title: 'Cairo FinTech Wallet (مصري)',
+    title: 'Cairo FinTech Wallet (مصري قاهري)',
+    dialect: 'EGYPTIAN',
     agentId: 'AG-AHMED-08',
     customerId: 'CUST-CAI-442',
-    text: `الموظف: أهلاً بحضرتك في خدمة الدعم المالي، معاك أحمد.
-العميل: إزيك يا فندم، أنا عاوز أعرف ليه التحويل بتاعي اتأخر لحد دلوقتي؟ الفلوس مخصومة!
-الموظف: بعتذر جداً لحضرتك على التأخير، راجعت المعاملة وحالياً بتتم معالجتها وهتوصل خلال نصف ساعة.
-العميل: ماشي يا فندم، متشكر جداً لمساعدتك واهتمامك.`,
+    text: `الموظف: أَلُو، يَا فَنْدِمْ صَبَاحِ الفُلّْ! مَعَ حَضْرِتَكْ أَحْمَدْ مِنْ خِدْمِةْ العُمَلَا.. إِزَّيَّكْ؟ يَا رَبّْ تْكُونْ بْخِيرْ، أَقْدَرْ أَخْدِمْ حَضْرِتَكْ بِإِيهِ النَّهَارْدَهْ؟
+العميل: إِزَّيَّكْ يَا أَحْمَدْ يَا بْنِي، إِلْحَأْنِي! أَنَا بَاعِتْ تَحْوِيلْ خَمَسْتَلَافْ جِنِيهْ مِنَ الصُّبْحْ وِمَوَصَلُوشْ لِحَدْ دِلْوَأْتِي وِالفِلُوسْ مَخْصُومَة! دِي مَصَارِيفْ مُسْتَشْفَى وِمِسْتَعْجِلْ جِدًّا، هَتِعْمِلُوا إِيه فِي المُصِيبَة دِي يَعْنِي؟! 
+الموظف: حَقَّكْ عَلَيَّا يَا فَنْدِمْ وِرَاسَكْ عَنْدِي مَتِئْلَقْشِ خَالِصْ.. أَنَا بَاصِصْ فِي السِّيسْتِمْ حَالاً، المُعَامَلَة بَسّْ كَانِتْ مِحْتَاجَة تَأْكِيدْ مِنَ البَنْكْ وِخِلَالْ عَشَرْ دَقَايِقْ بِالكِتِيرْ هَتْكُونْ مْسَمَّعَة عَنْدَكْ فِي المَحْفَظَة، عِينِي لِيكْ!
+العميل: رَبِّنَا يِخَلِّيكْ يَا أَحْمَدْ يَا بْنِي وِيْطَمِّنْ قَلْبَكْ، أَلْفِ شُكْرْ لِيكْ عَلَى ذُوقَكْ وِجَدْعَنْتَكْ وِسُرْعِةْ حَلَّكْ.`,
   },
   {
-    title: 'Amman Logistics Delivery (شامي)',
+    title: 'Damascus Express Delivery (شامي سوري)',
+    dialect: 'LEVANTINE',
     agentId: 'AG-RANA-05',
     customerId: 'CUST-AMM-771',
-    text: `الموظف: يسعد صباحك من شركة الشحن، معك رنا، كيف بقدر أساعدك؟
-العميل: مرحبا، شو صار بطرد الكتب؟ صارله كتير متأخر وبدي استلمه اليوم ضروري!
-الموظف: تكرم عينك، تواصلت مع السائق هلأ وهو بالطريق لعندك ورح يوصل خلال 40 دقيقة.
-العميل: يسلمو كتير رنا، يعطيكي ألف عافية.`,
+    text: `الموظف: يِسْعَدْ صَبَاحَكْ يَا رَبّْ وِأَهْلًا وِسَهْلًا فِيكْ بْشِرْكِةْ التَّوْصِيلْ، مَعَكْ رَنَا.. تِكْرَمْ عَيْنَكْ كِيفْ فِينِي سَاعْدَكِ اليَوْمْ؟
+العميل: مَرْحَبَا أُخْتِي رَنَا، وَالله صَارْلِي نَاطِرْ الشَّحْنِةْ أَرْبَعْ أَيَّامْ وِكِلْ مَا بْدِءِّلْكُنْ بِتْئُولُولِي بِالطَّرِيءْ! شُو الأِصَّة يَعْنِي؟ بِدِّي يَاهَا اليَوْمْ ضَرُورِي مَا بِئْدَرْ أَجِّلْ أَكْتَرْ مِنْ هِيكْ!
+الموظف: حَقَّكْ عَلَيْنَا يَا أَخِي وِمِيِّةْ أَهْلًا وِسَهْلًا فِيكْ، تِكْرَمْ عَيْنَكْ هَلَّأْ فَوْرًا بَحْكِي مَعَ الشُّوفِيرْ وِبْخَلِّيهْ يْسَلْمَكْ يَاهَا بَعْدِ الضُّهْرْ، وَلَا تَاكُلْ هَمّْ أَبَدًا.
+العميل: يِسْلَمُوا إِيدِيكِي يَا رَنَا كِلِّكْ ذُوقْ، الله يَعْطِيكِي أَلْفْ عَافْيِةْ يَا رَبّْ وِمَا قَصَّرْتِي.`,
+  },
+  {
+    title: 'Casablanca Tech Support (مغاربي مغربي)',
+    dialect: 'MAGHREBI',
+    agentId: 'AG-KARIM-03',
+    customerId: 'CUST-CAS-101',
+    text: `الموظف: السَّلَامُ عَلَيْكُمْ خُويَا، كِيدَايِرْ لَابَاسْ عْلِيكْ؟ مْعَاكْ كَرِيمْ مِنْ مَصْلَحَةِ الزَّبَنَاءْ، كِفَاشْ نْقْدَرْ نْعَاوْنَكِ اليُومْ؟
+العميل: أَهْلًا خُويَا كَرِيمْ، عَنْدِي وَاحِدْ الْمُشْكِلْ دَابَا فَالْحِسَابْ دْيَالِي.. الكُونَكْسْيُونْ تْقِيلَة بْزَّافْ وِدَازَتْ سِيمَانَة وِمَا كَايِنْ حْتَّى شِي حَلّْ، وَاشْ كَايِنْ شِي بْلُوكَاجْ عَاَفَاكْ؟
+الموظف: مَا كَايِنْ حْتَّى مُشْكِلْ أَ خَايْ، دَابَا نْشُوفْ مْعَاكْ لَا لِينِي وِنْصَلْحُو لِيكْ هَادْ العَطَبْ دِيرِيكْتْ، غِيرْ اِرْتَاحْ.
+العميل: الله يِحْفَظَكْ أَ خُويَا بَارَكَ الله فِيكْ، شُكْرًا بْزَّافْ عَلَى المْعَامْلَة الزْوِينَة.`,
   },
 ];
 
@@ -57,8 +74,61 @@ export const LiveAudioAnalysisLabTab: React.FC<LiveAudioAnalysisLabTabProps> = (
   const [customerId, setCustomerId] = useState<string>(PRESET_CONVERSATIONS[0].customerId);
   const [audioTextAr, setAudioTextAr] = useState<string>(PRESET_CONVERSATIONS[0].text);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastAnalysis, setLastAnalysis] = useState<CallQAAnalysis | null>(null);
+
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleToggleSpeak = async () => {
+    if (!audioTextAr.trim()) return;
+
+    if (isSpeaking) {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsSpeaking(false);
+      return;
+    }
+
+    setIsSpeaking(true);
+    try {
+      const currentPreset = PRESET_CONVERSATIONS[selectedPreset];
+      const lines = audioTextAr.split('\n').filter((l) => l.trim().length > 0);
+      const firstTurn = lines[0] || audioTextAr;
+      const isCustomer = firstTurn.startsWith('العميل:');
+      const speaker = isCustomer ? 'CUSTOMER' : 'AGENT';
+      const cleanText = firstTurn.replace(/^(الموظف:|العميل:)/, '').trim();
+      const dialect = currentPreset?.dialect || 'GULF';
+
+      const audioUrl = await synthesizeVoice(cleanText, dialect, speaker);
+      const audio = new Audio(audioUrl);
+      audioPlayerRef.current = audio;
+      audio.onended = () => setIsSpeaking(false);
+      audio.onerror = () => {
+        fallbackSpeechSynthesis();
+      };
+      await audio.play();
+    } catch {
+      fallbackSpeechSynthesis();
+    }
+  };
+
+  const fallbackSpeechSynthesis = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(audioTextAr.slice(0, 150));
+      utter.lang = 'ar-SA';
+      utter.onend = () => setIsSpeaking(false);
+      utter.onerror = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utter);
+    } else {
+      setIsSpeaking(false);
+    }
+  };
 
   const handleRunAnalyze = async () => {
     if (!audioTextAr.trim()) return;
@@ -166,24 +236,48 @@ export const LiveAudioAnalysisLabTab: React.FC<LiveAudioAnalysisLabTabProps> = (
             />
           </div>
 
-          {/* Action Button */}
-          <button
-            onClick={handleRunAnalyze}
-            disabled={isAnalyzing || !audioTextAr.trim()}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-xs tracking-wide uppercase bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isAnalyzing ? (
-              <>
-                <Cpu className="w-4 h-4 animate-spin text-white" />
-                <span>{isRtl ? 'جارٍ تحليل اللهجة وتوليد التوجيهات...' : 'Analyzing Dialect & Generating Coaching on GPU...'}</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 text-white fill-current" />
-                <span>{isRtl ? 'تحليل المكالمة وإصدار التقييم' : 'Analyze Arabic Speech & GPU QA'}</span>
-              </>
-            )}
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleToggleSpeak}
+              disabled={!audioTextAr.trim()}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold text-xs tracking-wide uppercase border flex items-center justify-center gap-2 transition-all ${
+                isSpeaking
+                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/30 animate-pulse'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+              }`}
+            >
+              {isSpeaking ? (
+                <>
+                  <Pause className="w-4 h-4 fill-current" />
+                  <span>{isRtl ? 'إيقاف الصوت' : 'Stop Speaking'}</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4 text-indigo-400" />
+                  <span>{isRtl ? 'استماع للصوت الحقيقي' : 'Listen Real Voice'}</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={handleRunAnalyze}
+              disabled={isAnalyzing || !audioTextAr.trim()}
+              className="flex-1 py-3 px-4 rounded-xl font-semibold text-xs tracking-wide uppercase bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Cpu className="w-4 h-4 animate-spin text-white" />
+                  <span>{isRtl ? 'جارٍ التحليل...' : 'Analyzing QA...'}</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 text-white fill-current" />
+                  <span>{isRtl ? 'تحليل وإصدار التقييم' : 'Analyze GPU QA'}</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {error && (
             <div className="mt-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-start gap-2 text-xs text-rose-300">
@@ -262,29 +356,25 @@ export const LiveAudioAnalysisLabTab: React.FC<LiveAudioAnalysisLabTabProps> = (
             </div>
 
             {/* GPU Synthesized Executive Coaching Memorandum */}
-            <div className="p-5 rounded-xl bg-slate-900 border border-slate-800">
-              <div className="flex items-center gap-2 mb-2">
+            {/* AI Supervisor Coaching & Executive Summary */}
+            <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-400" />
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-200 font-sans">
-                  {isRtl ? 'ملخص تنفيذي للمشرف (qwen2.5:0.5b)' : 'Executive Arabic Coaching Memorandum (Local GPU)'}
+                  {isRtl ? 'ملخص تنفيذي للمشرف وتوجيهات الجودة' : 'Executive Arabic Coaching Memorandum (Local GPU)'}
                 </h3>
               </div>
-              <p className="text-xs text-slate-200 leading-relaxed font-arabic text-right dir-rtl mb-3">
-                {lastAnalysis.executive_summary_ar}
-              </p>
-
-              {lastAnalysis.coaching_recommendations.length > 0 && (
-                <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                  <span className="text-[11px] font-semibold text-indigo-400 block">
-                    توصيات تدريب الموظف:
-                  </span>
-                  {lastAnalysis.coaching_recommendations.map((rec, i) => (
-                    <div key={i} className="text-xs text-slate-300 text-right dir-rtl font-arabic">
-                      &bull; {rec}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <MarkdownRenderer
+                content={[
+                  lastAnalysis.executive_summary_ar,
+                  lastAnalysis.coaching_recommendations.length > 0
+                    ? '\n\n**توصيات تدريب الموظف:**\n' + lastAnalysis.coaching_recommendations.map((r) => `- ${r}`).join('\n')
+                    : '',
+                ].join('')}
+                title={isRtl ? 'تقرير التقييم والتوجيه' : 'Evaluation & Coaching Report'}
+                isRtl={true}
+                maxInitialHeight="max-h-[350px]"
+              />
             </div>
           </div>
         ) : (

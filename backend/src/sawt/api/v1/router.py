@@ -4,11 +4,15 @@ from fastapi import APIRouter
 from .health import router as health_router
 from .auth import router as auth_router
 from .calls import router as calls_router
+from .files import router as files_router
+from .voice import router as voice_router
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(health_router)
 api_v1_router.include_router(auth_router)
 api_v1_router.include_router(calls_router)
+api_v1_router.include_router(files_router)
+api_v1_router.include_router(voice_router)
 
 
 @api_v1_router.get("/info", tags=["info"])

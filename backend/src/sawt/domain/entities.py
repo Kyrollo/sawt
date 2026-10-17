@@ -37,6 +37,7 @@ class SpeakerTurn(BaseModel):
     sentiment: SentimentTier
     confidence: float = 0.95
     acoustic_pitch_hz: float = 145.0
+    audio_url: str | None = None
 
 
 class CallQAAnalysis(BaseModel):
@@ -56,6 +57,7 @@ class CallQAAnalysis(BaseModel):
     executive_summary_ar: str
     coaching_recommendations: list[str] = Field(default_factory=list)
     timestamp: str
+    audio_url: str | None = None
 
 
 class ContactCenterKPIs(BaseModel):

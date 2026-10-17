@@ -18,6 +18,7 @@ export interface SpeakerTurn {
   sentiment: SentimentTier;
   confidence: number;
   acoustic_pitch_hz: number;
+  audio_url?: string;
 }
 
 export interface CallQAAnalysis {
@@ -37,6 +38,24 @@ export interface CallQAAnalysis {
   executive_summary_ar: string;
   coaching_recommendations: string[];
   timestamp: string;
+  audio_url?: string;
+}
+
+export interface VoiceSample {
+  id: string;
+  filename: string;
+  mp3_filename: string;
+  title: string;
+  dialect: ArabicDialect;
+  duration_sec: number;
+  size_kb: number;
+  agent: string;
+  customer: string;
+  description: string;
+  sample_text: string;
+  download_wav_url: string;
+  download_mp3_url: string;
+  stream_mp3_url: string;
 }
 
 export interface ContactCenterKPIs {

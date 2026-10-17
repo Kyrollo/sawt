@@ -5,10 +5,11 @@ import { CenterAnalyticsTab } from './components/CenterAnalyticsTab';
 import { LiveAudioAnalysisLabTab } from './components/LiveAudioAnalysisLabTab';
 import { fetchCalls, fetchAnalytics } from './lib/api';
 import { CallQAAnalysis, ContactCenterKPIs } from './types/sawt';
-import { GitCommit, Headphones, BarChart3, PlayCircle } from 'lucide-react';
+import { FileUploadZone } from './components/FileUploadZone';
+import { GitCommit, Headphones, BarChart3, PlayCircle, FolderUp } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'calls' | 'analytics' | 'lab'>('calls');
+  const [activeTab, setActiveTab] = useState<'calls' | 'analytics' | 'lab' | 'uploads'>('calls');
   const [calls, setCalls] = useState<CallQAAnalysis[]>([]);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
   const [kpis, setKpis] = useState<ContactCenterKPIs | null>(null);
@@ -99,6 +100,18 @@ export const App: React.FC = () => {
             <PlayCircle className="w-4 h-4" />
             {isRtl ? 'المختبر الصوتي المباشر' : 'Live Arabic Speech Lab'}
           </button>
+
+          <button
+            onClick={() => setActiveTab('uploads')}
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === 'uploads'
+                ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <FolderUp className="w-4 h-4" />
+            {isRtl ? 'رفع التسجيلات والنصوص' : 'Audio & Transcript Ingestion'}
+          </button>
         </div>
 
         {error && (
@@ -125,6 +138,19 @@ export const App: React.FC = () => {
           <LiveAudioAnalysisLabTab
             onAnalyzeComplete={handleAnalyzeComplete}
             isRtl={isRtl}
+          />
+        )}
+
+        {activeTab === 'uploads' && (
+          <FileUploadZone
+            title={isRtl ? 'رفع تسجيلات المكالمات والنصوص' : 'Call Recordings & Transcripts Ingestion'}
+            acceptedTypes=".wav,.mp3,.m4a,.ogg,.txt,.srt,.vtt,.json,.csv"
+            isRtl={isRtl}
+            onCallCreated={(callId) => {
+              loadData();
+              setSelectedCallId(callId);
+              setActiveTab('calls');
+            }}
           />
         )}
       </main>
