@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "sawt"
 version = "1.0.0"
 description = "Arabic Speech Analytics & Contact Center QA: ASR transcription, speaker diarization, dialect identification, and sentiment scorecards"
-readme = "../README.md"
+readme = "README.md"
 authors = [{ name = "Kyrollo", email = "kyrollo@users.noreply.github.com" }]
 requires-python = ">=3.12"
 dependencies = [
